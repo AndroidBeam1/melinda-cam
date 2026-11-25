@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.MelindaCam" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">#FF6B9E</item>
+        <item name="colorPrimaryDark">#D94F82</item>
+        <item name="colorAccent">#FF6B9E</item>
+    </style>
+</resources>
