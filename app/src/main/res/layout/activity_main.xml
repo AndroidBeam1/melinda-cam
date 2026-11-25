@@ -6,6 +6,7 @@
     android:padding="16dp">
 
     <LinearLayout
+        android:id="@+id/rootLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -31,6 +32,22 @@
             android:layout_marginTop="16dp"
             app:show_buffering="when_playing" />
 
+        <WebView
+            android:id="@+id/mjpegView"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/petPhotoView"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginTop="8dp"
+            android:visibility="gone"
+            android:scaleType="centerCrop"
+            android:contentDescription="Photo caught by Pet Watch" />
+
         <Button
             android:id="@+id/playButton"
             android:layout_width="match_parent"
@@ -53,6 +70,97 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:text="Not connected yet. Go to Setup and type your camera IP and password once."
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/testButton"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="16dp"
+            android:text="TEST CONNECTION"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/retryButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="RETRY PLAY"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/snapshotButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="SHOW SNAPSHOT"
+            android:textSize="20sp" />
+
+        <Button
+            android:id="@+id/mjpegButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="VIEW WITH MJPEG"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Motion + Pet + Sound"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Where is my pet?"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Pet Watch — motion photo, not 100% dog AI yet. When it sees movement it takes a photo and shows it here."
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/motionButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="MOTION ALERTS: OFF — TAP TO TURN ON" />
+
+        <Button
+            android:id="@+id/petButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="PET WATCH: OFF — TAP TO TURN ON" />
+
+        <Button
+            android:id="@+id/soundButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="SOUND: ON — TAP TO MUTE" />
+
+        <Button
+            android:id="@+id/talkButton"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="8dp"
+            android:text="🎤 TALK — MICROPHONE"
+            android:textSize="20sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Talk is experimental in v2: it turns your phone mic on and records your voice. Talking through the camera speaker is a work in progress, not promised yet."
             android:textSize="16sp" />
 
         <TextView
@@ -81,7 +189,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Away only works with Tailscale through your home computer. Your computer in Jamesport stays on, runs Tailscale, and is the bridge to the camera. Your phone in Cameron runs Tailscale too and talks through that computer. See Setup for the checklist."
+            android:text="Away only works with Tailscale through your home computer. Your computer in Jamesport stays on, runs Tailscale, and is the bridge to the camera. Your phone in Cameron runs Tailscale too and talks through that computer. Away uses the same camera IP, 10.40.1.114, through Tailscale — not a 100.x address."
             android:textSize="16sp" />
 
         <TextView
@@ -142,7 +250,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="8dp"
-            android:hint="Away address — Tailscale IP, e.g. 100.x.x.x"
+            android:hint="Away address — same camera IP, 10.40.1.114, via Tailscale"
             android:inputType="text" />
 
         <EditText
@@ -241,8 +349,72 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Theme color, big buttons, light colors, camera LED on/off, and IR / night mode are in the web app too. Camera LED and IR only work when the camera is connected."
+            android:text="Pick a theme color, make buttons BIG or HUGE, switch Dark / Light, or hit PARTY! Camera LED and IR only work when the camera is connected."
             android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/themePink"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:text="PINK" />
+
+        <Button
+            android:id="@+id/themeTeal"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:text="TEAL" />
+
+        <Button
+            android:id="@+id/themePurple"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:text="PURPLE" />
+
+        <Button
+            android:id="@+id/themeBlue"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:text="BLUE" />
+
+        <Button
+            android:id="@+id/themeOrange"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:text="ORANGE" />
+
+        <Button
+            android:id="@+id/themeGreen"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:text="GREEN" />
+
+        <Button
+            android:id="@+id/sizeButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="BUTTON SIZE: BIG — TAP FOR HUGE" />
+
+        <Button
+            android:id="@+id/darkButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:text="LIGHT MODE: ON — TAP FOR DARK" />
+
+        <Button
+            android:id="@+id/partyButton"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="8dp"
+            android:text="🎉 PARTY!"
+            android:textSize="20sp" />
 
         <Button
             android:id="@+id/ledButton"
@@ -270,7 +442,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Your Roku app is a separate build coming soon. This app does not control your Roku yet in v1. Your earlier Roku work was MelindaHome — a custom home and screensaver for Roku."
+            android:text="Your Roku app is a separate build coming soon. This app does not control your Roku yet in v2. Your earlier Roku work was MelindaHome — a custom home and screensaver for Roku."
             android:textSize="16sp" />
 
         <Button
