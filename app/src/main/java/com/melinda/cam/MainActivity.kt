@@ -334,6 +334,11 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        findViewById<Button>(R.id.teraboxButton).setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.terabox.com"))
+            startActivity(intent)
+        }
+
         ledButton.setOnClickListener {
             ledOn = !ledOn
             settings = settings.copy(ledOn = ledOn)
