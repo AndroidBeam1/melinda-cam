@@ -420,7 +420,7 @@ class MainActivity : AppCompatActivity() {
         player?.release()
         val newPlayer = ExoPlayer.Builder(this).build()
         player = newPlayer
-        player.volume = if (soundOn) 1.0f else 0.0f
+        newPlayer.volume = if (soundOn) 1.0f else 0.0f
         playerView.player = newPlayer
         statusText.text = "Connecting ${if (settings.stream1080p) "1080p" else "360p"} from ${settings.activeHost}..."
         newPlayer.addListener(object : Player.Listener {
