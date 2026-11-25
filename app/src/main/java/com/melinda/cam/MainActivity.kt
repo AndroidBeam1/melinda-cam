@@ -324,6 +324,16 @@ class MainActivity : AppCompatActivity() {
             helperAnswer.text = AiHelper.answer(helperInput.text.toString())
         }
 
+        findViewById<Button>(R.id.driveButton).setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://drive.google.com"))
+            startActivity(intent)
+        }
+
+        findViewById<Button>(R.id.megaButton).setOnClickListener {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://mega.io"))
+            startActivity(intent)
+        }
+
         ledButton.setOnClickListener {
             ledOn = !ledOn
             settings = settings.copy(ledOn = ledOn)
