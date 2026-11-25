@@ -20,7 +20,12 @@ data class CamSettings(
     val bigButtons: Boolean = true,
     val ledOn: Boolean = true,
     val nightMode: String = "auto",
-    val irOn: Boolean = true
+    val irOn: Boolean = true,
+    val darkMode: Boolean = false,
+    val hugeButtons: Boolean = false,
+    val motionOn: Boolean = false,
+    val petWatchOn: Boolean = false,
+    val soundOn: Boolean = true
 ) {
     /** The address to use right now: home, or Tailscale remote when Away. */
     val activeHost: String
@@ -59,7 +64,12 @@ class CameraSettings(private val context: Context) {
         bigButtons = prefs.getBoolean("big_buttons", true),
         ledOn = prefs.getBoolean("led_on", true),
         nightMode = prefs.getString("night_mode", "auto") ?: "auto",
-        irOn = prefs.getBoolean("ir_on", true)
+        irOn = prefs.getBoolean("ir_on", true),
+        darkMode = prefs.getBoolean("dark_mode", false),
+        hugeButtons = prefs.getBoolean("huge_buttons", false),
+        motionOn = prefs.getBoolean("motion_on", false),
+        petWatchOn = prefs.getBoolean("pet_watch_on", false),
+        soundOn = prefs.getBoolean("sound_on", true)
     )
 
     fun save(s: CamSettings) {
@@ -77,6 +87,11 @@ class CameraSettings(private val context: Context) {
             .putBoolean("led_on", s.ledOn)
             .putString("night_mode", s.nightMode)
             .putBoolean("ir_on", s.irOn)
+            .putBoolean("dark_mode", s.darkMode)
+            .putBoolean("huge_buttons", s.hugeButtons)
+            .putBoolean("motion_on", s.motionOn)
+            .putBoolean("pet_watch_on", s.petWatchOn)
+            .putBoolean("sound_on", s.soundOn)
             .apply()
     }
 }
