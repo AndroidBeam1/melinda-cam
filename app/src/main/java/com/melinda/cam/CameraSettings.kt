@@ -13,6 +13,12 @@ data class CamSettings(
     val remoteHost: String = "",
     val username: String = "thingino",
     val password: String = "",
+    // v2.1: TWO passwords. The camera/root password (above) is for HTTP
+    // (Test Connection, Snapshot, MJPEG) with user "root". The stream
+    // password (below) is a SEPARATE Thingino streamer password for RTSP
+    // live video, user "thingino", default "thingino" (the public
+    // Thingino default — NOT Melinda's private root password).
+    val streamPassword: String = "thingino",
     val useRemote: Boolean = false,
     val autoConnect: Boolean = true,
     val stream1080p: Boolean = true,
@@ -31,11 +37,19 @@ data class CamSettings(
     val activeHost: String
         get() = if (useRemote && remoteHost.isNotBlank()) remoteHost.trim() else host.trim()
 
-    /** RTSP link for the Android app / VLC. Browsers cannot play RTSP. */
+    /** RTSP link for the Android app and VLC. Browsers cannot play RTSP.
+     *  v2.1: RTSP uses the STREAM password (thingino by default), NOT
+     *  the camera/root password. */
     fun rtspUrl(): String {
         val channel = if (stream1080p) "ch0" else "ch1"
-        return "rtsp://$username:$password@${activeHost}/$channel"
+        return "rtsp://$username:$streamPassword@${activeHost}/$channel"
     }
+
+    /** HTTP user for Test Connection / Snapshot / MJPEG: "root". */
+    fun httpUser(): String = "root"
+
+    /** HTTP password is the camera/root password Melinda set in setup. */
+    fun httpPassword(): String = password
 
     /** MJPEG link for a web view. Browsers can show MJPEG. */
     fun mjpegUrl(): String = "http://${activeHost}/x/mjpeg.cgi"
@@ -57,6 +71,7 @@ class CameraSettings(private val context: Context) {
         remoteHost = prefs.getString("remote_host", "") ?: "",
         username = prefs.getString("username", "thingino") ?: "thingino",
         password = prefs.getString("password", "") ?: "",
+        streamPassword = prefs.getString("stream_password", "thingino") ?: "thingino",
         useRemote = prefs.getBoolean("use_remote", false),
         autoConnect = prefs.getBoolean("auto_connect", true),
         stream1080p = prefs.getBoolean("stream_1080p", true),
@@ -79,6 +94,7 @@ class CameraSettings(private val context: Context) {
             .putString("remote_host", s.remoteHost)
             .putString("username", s.username)
             .putString("password", s.password)
+            .putString("stream_password", s.streamPassword)
             .putBoolean("use_remote", s.useRemote)
             .putBoolean("auto_connect", s.autoConnect)
             .putBoolean("stream_1080p", s.stream1080p)
