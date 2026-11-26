@@ -258,7 +258,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="8dp"
-            android:hint="Username — usually thingino"
+            android:hint="Stream username — usually thingino"
             android:inputType="text" />
 
         <EditText
@@ -266,8 +266,23 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="8dp"
-            android:hint="Password"
+            android:hint="Camera password (root) — the one you set in Thingino"
             android:inputType="textPassword" />
+
+        <EditText
+            android:id="@+id/streamPasswordInput"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="8dp"
+            android:hint="Stream password — for live video, usually thingino"
+            android:inputType="textPassword" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Two passwords: Camera password is for photos and Test Connection. Stream password is for live video (Play) — usually thingino, the Thingino default."
+            android:textSize="16sp" />
 
         <Button
             android:id="@+id/saveButton"
