@@ -38,7 +38,13 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * Melinda Cam v2.
+ * Melinda Cam v2.1.
+ * v2.1 fix: TWO passwords. RTSP live video uses the STREAM password
+ * (user thingino, default "thingino" — the public Thingino default).
+ * HTTP (Test Connection, Snapshot, MJPEG) uses user "root" with the
+ * camera/root password Melinda set in Thingino setup. v2.0 used one
+ * password for both, so Play failed with Source error even though
+ * Test Connection said the camera was reachable.
  * Live view over RTSP with Media3 ExoPlayer. Setup is saved once.
  * v2 fixes: Play now shows the real error instead of a black screen,
  * it auto-tries 360p if 1080p fails, and there is a TEST CONNECTION
@@ -102,6 +108,7 @@ class MainActivity : AppCompatActivity() {
         val remoteHostInput = findViewById<EditText>(R.id.remoteHostInput)
         val usernameInput = findViewById<EditText>(R.id.usernameInput)
         val passwordInput = findViewById<EditText>(R.id.passwordInput)
+        val streamPasswordInput = findViewById<EditText>(R.id.streamPasswordInput)
         val helperInput = findViewById<EditText>(R.id.helperInput)
         val helperAnswer = findViewById<TextView>(R.id.helperAnswer)
         val ledButton = findViewById<Button>(R.id.ledButton)
@@ -117,6 +124,7 @@ class MainActivity : AppCompatActivity() {
         remoteHostInput.setText(settings.remoteHost)
         usernameInput.setText(settings.username)
         passwordInput.setText(settings.password)
+        streamPasswordInput.setText(settings.streamPassword)
         refreshRtspText(rtspText)
         updateLedButton(ledButton)
         updateNightButton(nightButton)
@@ -136,7 +144,8 @@ class MainActivity : AppCompatActivity() {
                 host: String?,
                 realm: String?
             ) {
-                handler?.proceed(settings.username, settings.password)
+                // v2.1: HTTP auth is user "root" + camera/root password.
+                handler?.proceed("root", settings.password)
             }
         }
 
@@ -154,6 +163,7 @@ class MainActivity : AppCompatActivity() {
             }
             bounceTitle(titleText)
             mjpegView.visibility = View.GONE
+            petPhotoView.visibility = View.GONE
             playRtsp(playerView, statusText, false)
         }
 
@@ -183,9 +193,8 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             player?.stop()
-            mjpegView.visibility = View.VISIBLE
-            mjpegView.loadUrl(settings.snapshotUrl())
-            statusText.text = "Showing a snapshot from ${settings.activeHost}. If this works, the camera is on and reachable — the problem is RTSP, not the camera."
+            mjpegView.visibility = View.GONE
+            showSnapshot(statusText, petPhotoView)
         }
 
         findViewById<Button>(R.id.mjpegButton).setOnClickListener {
@@ -194,9 +203,10 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             player?.stop()
+            petPhotoView.visibility = View.GONE
             mjpegView.visibility = View.VISIBLE
             mjpegView.loadUrl(settings.mjpegUrl())
-            statusText.text = "Showing MJPEG live view from ${settings.activeHost}. This is the backup if RTSP will not play."
+            statusText.text = "Showing MJPEG live view from ${settings.activeHost}. This is the backup if RTSP will not play. If you see the camera's settings page instead of a moving picture, tap SHOW SNAPSHOT — that fetches the photo directly."
         }
 
         motionButton.setOnClickListener {
@@ -295,7 +305,8 @@ class MainActivity : AppCompatActivity() {
                 host = hostInput.text.toString().trim(),
                 remoteHost = remoteHostInput.text.toString().trim(),
                 username = usernameInput.text.toString().trim().ifBlank { "thingino" },
-                password = passwordInput.text.toString()
+                password = passwordInput.text.toString(),
+                streamPassword = streamPasswordInput.text.toString().trim().ifBlank { "thingino" }
             )
             settingsStore.save(settings)
             refreshRtspText(rtspText)
@@ -437,7 +448,7 @@ class MainActivity : AppCompatActivity() {
                     statusText.text = "That stream did not connect, trying the other one now..."
                     playRtsp(playerView, statusText, true)
                 } else {
-                    statusText.text = "Could not connect — check Wi-Fi / Tailscale / password. Tap TEST CONNECTION, then SHOW SNAPSHOT or VIEW WITH MJPEG below. Error: ${error.message ?: "no details"}"
+                    statusText.text = "Could not connect — check Wi-Fi / Tailscale / stream password. The live video password is the Stream password in Setup (usually thingino), not the camera password. Tap TEST CONNECTION, then SHOW SNAPSHOT or VIEW WITH MJPEG below. Error: ${error.message ?: "no details"}"
                 }
             }
         })
@@ -465,8 +476,10 @@ class MainActivity : AppCompatActivity() {
                 conn.connectTimeout = 5000
                 conn.readTimeout = 5000
                 conn.requestMethod = "GET"
+                // v2.1: HTTP auth is user "root" + camera/root password,
+                // NOT thingino + root password.
                 val auth = Base64.encodeToString(
-                    "${settings.username}:${settings.password}".toByteArray(Charsets.UTF_8),
+                    "root:${settings.password}".toByteArray(Charsets.UTF_8),
                     Base64.NO_WRAP
                 )
                 conn.setRequestProperty("Authorization", "Basic $auth")
@@ -479,6 +492,63 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 conn.disconnect()
+            } catch (e: Exception) {
+                runOnUiThread {
+                    statusText.text = "Camera did not answer — check power / Wi-Fi / Tailscale / IP. (${e.javaClass.simpleName})"
+                }
+            }
+        }.start()
+    }
+
+    // v2.1: SHOW SNAPSHOT fetches the JPEG bytes directly with
+    // root auth and shows the photo in an ImageView. It does NOT load
+    // /x/image.cgi in a WebView — that showed the Thingino settings
+    // page instead of a photo when auth was wrong.
+    private fun showSnapshot(statusText: TextView, photoView: ImageView) {
+        if (settings.password.isBlank()) {
+            statusText.text = "Type your camera password in Setup first, then tap Save, then Show Snapshot."
+            return
+        }
+        statusText.text = "Getting a snapshot from ${settings.activeHost}..."
+        Thread {
+            try {
+                val url = URL("http://${settings.activeHost}/x/image.cgi")
+                val conn = url.openConnection() as HttpURLConnection
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
+                conn.requestMethod = "GET"
+                val auth = Base64.encodeToString(
+                    "root:${settings.password}".toByteArray(Charsets.UTF_8),
+                    Base64.NO_WRAP
+                )
+                conn.setRequestProperty("Authorization", "Basic $auth")
+                val code = conn.responseCode
+                if (code == 401) {
+                    conn.disconnect()
+                    runOnUiThread {
+                        statusText.text = "Camera answered, but the camera password is wrong. Check the password in Setup, tap Save, and try again."
+                    }
+                    return@Thread
+                }
+                if (code !in 200..299) {
+                    conn.disconnect()
+                    runOnUiThread {
+                        statusText.text = "Camera answered with code $code. Try TEST CONNECTION, then Play."
+                    }
+                    return@Thread
+                }
+                val bytes = conn.inputStream.readBytes()
+                conn.disconnect()
+                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                runOnUiThread {
+                    if (bitmap != null) {
+                        photoView.setImageBitmap(bitmap)
+                        photoView.visibility = View.VISIBLE
+                        statusText.text = "Snapshot from ${settings.activeHost} — camera is on and reachable. Now tap Play for live video."
+                    } else {
+                        statusText.text = "Camera answered, but the photo would not load. Try again, or tap VIEW WITH MJPEG."
+                    }
+                }
             } catch (e: Exception) {
                 runOnUiThread {
                     statusText.text = "Camera did not answer — check power / Wi-Fi / Tailscale / IP. (${e.javaClass.simpleName})"
@@ -552,8 +622,9 @@ class MainActivity : AppCompatActivity() {
         conn.connectTimeout = 5000
         conn.readTimeout = 5000
         conn.requestMethod = "GET"
+        // v2.1: HTTP auth is user "root" + camera/root password.
         val auth = Base64.encodeToString(
-            "${settings.username}:${settings.password}".toByteArray(Charsets.UTF_8),
+            "root:${settings.password}".toByteArray(Charsets.UTF_8),
             Base64.NO_WRAP
         )
         conn.setRequestProperty("Authorization", "Basic $auth")
